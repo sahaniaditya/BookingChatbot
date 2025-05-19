@@ -1,0 +1,136 @@
+<!-- frontend/chatbot.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Booking Chatbot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  .chatbox-div {
+    display: flex;
+    height: 100vh;
+  }
+
+  .chatbox-sidebar {
+    width: 300px;
+    background-color: #212121;
+    color: white;
+    padding: 1rem;
+    overflow-y: auto;
+  }
+
+  .chatbox-main {
+    flex: 1;
+    background-color: #414141;
+    position: relative; /* Ensures internal elements like chatbox can position inside */
+    padding-bottom: 100px; /* Space for footer */
+  }
+
+  #input-footer {
+    background-color: #212121;
+    border-radius: 10px;
+    position: fixed;
+    width: 50%;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-30%);
+    padding: 2rem;
+  }
+  #input{
+    border:none;
+    background-color: #212121;
+    outline: none;
+    width:100%;
+    line-height: 25px;
+    color : lightgray;
+  }
+  #chatbox{
+    width: 80%;
+    bottom: 50px;
+    padding: 2rem;
+    margin-top:5px;
+    padding-left: 20%;
+    color : lightgray;
+    overflow-y: auto;
+  }
+</style>
+</head>
+
+<body>
+  <!-- <h2 class="text-center">Booking Assistant</h2> -->
+  <div class="chatbox-div">
+  <div class="chatbox-sidebar">
+    <h2>Booking Assistant</h2>
+    <ul>
+      <li>Home</li>
+      <li>About Us</li>
+      <li>Settings</li>
+      <li>History</li>
+    </ul>
+  </div>
+
+  <div class="chatbox-main">
+    <div id="chatbox" style="height: 480px; overflow-y: auto;">
+      <!-- Messages will go here -->
+    </div>
+
+    <div id="input-footer">
+      <div class="div-input">
+        <input type="text" id="input" placeholder="Say something..."  onkeydown="handleEnter(event)"/>
+      </div>
+      <div class="div-buttons" style="text-align: right;">
+        <!-- <button onclick="sendMessage()">Chat</button> -->
+         <button onclick="sendMessage()" style="width: 50px;height: 50px; border-radius: 50%; font-size: 25px; font-weight: bolder;">&#8593;</button> <!-- ↑ -->
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <script>
+    const chatbox = document.getElementById("chatbox");
+    const sessionId = Math.random().toString(36).substr(2, 9);
+
+    function handleEnter(event) {
+    if (event.key === "Enter") {
+      sendMessage();
+    }
+     }
+
+
+    function sendMessage() {
+      const input = document.getElementById("input");
+      const chatbox = document.getElementById("chatbox");
+      const message = input.value;
+      input.value = "";
+
+      chatbox.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+
+      fetch("http://127.0.0.1:5000/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, message: message }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          chatbox.innerHTML += `<p><strong>Bot:</strong> ${data.reply}</p>`;
+          if (data.redirect) {
+            chatbox.innerHTML += `<a href="${data.redirect}" target="_blank">Click here to complete your booking</a>`;
+          }
+        });
+      // Auto-scroll to bottom
+      chatbox.scrollTop = chatbox.scrollHeight;   
+    }
+  </script>
+</body>
+
+</html>
